@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataClean Pro - Advanced Data Cleaning Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .gradient-bg { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .glass { backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.1); }
+        .data-preview { max-height: 400px; overflow-y: auto; }
+        .cleaning-card { 
+            transition: all 0.3s ease; 
+            border: 1px solid #e5e7eb;
+        }
+        .cleaning-card:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            border-color: #3b82f6;
+        }
+        .btn-primary { background-color: #2563eb; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s; font-weight: 500; }
+        .btn-primary:hover { background-color: #1d4ed8; }
+        .btn-danger { background-color: #dc2626; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s; font-weight: 500; }
+        .btn-danger:hover { background-color: #b91c1c; }
+        .btn-warning { background-color: #ea580c; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s; font-weight: 500; }
+        .btn-warning:hover { background-color: #c2410c; }
+        .btn-success { background-color: #16a34a; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s; font-weight: 500; }
+        .btn-success:hover { background-color: #15803d; }
+        .btn-info { background-color: #0891b2; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s; font-weight: 500; }
+        .btn-info:hover { background-color: #0e7490; }
+        .btn-purple { background-color: #9333ea; color: #fff; padding: 0.5rem 1rem; border-radius: 0.5rem; transition: background-color 0.2s; font-weight: 500; }
+        .btn-purple:hover { background-color: #7e22ce; }
+        .stat-card { padding: 1rem; border-radius: 0.5rem; text-align: center; }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Header -->
+    <header class="gradient-bg text-white py-8 px-4">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-5xl font-bold mb-3">DataClean Pro</h1>
+            <p class="text-xl opacity-90">Advanced Data Cleaning & Quality Assessment Suite</p>
+            <p class="text-sm opacity-75 mt-2">Complete toolkit for data preprocessing, validation, and transformation</p>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="max-w-7xl mx-auto p-6">
+        <!-- File Upload Section -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mb-8 cleaning-card">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                </svg>
+                Data Import & Sample Data
+            </h2>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                <div>
+                    <label for="fileInput" class="block text-sm font-medium text-gray-700 mb-2">Upload CSV File</label>
+                    <input type="file" id="fileInput" accept=".csv,.xlsx,.xls" class="w-full p-3 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-400 transition-colors cursor-pointer">
+                    <p class="text-xs text-gray-500 mt-1">Supports CSV, Excel (.xlsx, .xls) files</p>
+                </div>
+                <div class="space-y-2">
+                    <button id="loadSampleData" class="btn-primary w-full">Load Sample Dataset</button>
+                    <button id="loadMessyData" class="btn-warning w-full">Load Messy Dataset (Testing)</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Overview Dashboard -->
+        <div id="dataOverview" class="hidden bg-white rounded-xl shadow-lg p-6 mb-8 cleaning-card">
+            <h2 class="text-2xl font-semibold text-gray-800 mb-6 flex items-center">
+                <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 00-2-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                </svg>
+                Data Quality Dashboard
+            </h2>
+            <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                <div class="stat-card bg-blue-50 border-l-4 border-blue-500">
+                    <div class="text-2xl font-bold text-blue-600" id="totalRows">0</div>
+                    <div class="text-xs text-gray-600">Total Rows</div>
+                </div>
+                <div class="stat-card bg-green-50 border-l-4 border-green-500">
+                    <div class="text-2xl font-bold text-green-600" id="totalCols">0</div>
+                    <div class="text-xs text-gray-600">Columns</div>
+                </div>
+                <div class="stat-card bg-red-50 border-l-4 border-red-500">
+                    <div class="text-2xl font-bold text-red-600" id="missingValues">0</div>
+                    <div class="text-xs text-gray-600">Missing Values</div>
+                </div>
+                <div class="stat-card bg-yellow-50 border-l-4 border-yellow-500">
+                    <div class="text-2xl font-bold text-yellow-600" id="duplicateRows">0</div>
+                    <div class="text-xs text-gray-600">Duplicates</div>
+                </div>
+                <div class="stat-card bg-purple-50 border-l-4 border-purple-500">
+                    <div class="text-2xl font-bold text-purple-600" id="numericCols">0</div>
+                    <div class="text-xs text-gray-600">Numeric Cols</div>
+                </div>
+                <div class="stat-card bg-indigo-50 border-l-4 border-indigo-500">
+                    <div class="text-2xl font-bold text-indigo-600" id="completeness">0%</div>
+                    <div class="text-xs text-gray-600">Completeness</div>
+                </div>
+            </div>
+            
+            <!-- Column Analysis -->
+            <div class="mt-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-3">Column Analysis</h3>
+                <div id="columnAnalysis" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"></div>
+            </div>
+        </div>
+
+        <!-- Main Tools Grid -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-8">
+            <!-- Left Column - Data Quality Tools -->
+            <div class="space-y-6">
+                <!-- Missing Values Tools -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                        </svg>
+                        Missing Value Treatment
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="removeMissingRows" class="btn-danger w-full">Remove Rows with Missing Values</button>
+                        <button id="fillMissingMean" class="btn-warning w-full">Fill Numeric with Mean</button>
+                        <button id="fillMissingMedian" class="btn-warning w-full">Fill Numeric with Median</button>
+                        <button id="fillMissingMode" class="btn-info w-full">Fill Categorical with Mode</button>
+                        <button id="fillMissingZero" class="btn-info w-full">Fill Missing with Zero</button>
+                        <button id="fillMissingForward" class="btn-info w-full">Forward Fill (Propagate)</button>
+                        <button id="fillMissingBackward" class="btn-info w-full">Backward Fill</button>
+                    </div>
+                </div>
+
+                <!-- Duplicate Management -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2"></path>
+                        </svg>
+                        Duplicate Management
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="removeDuplicates" class="btn-purple w-full">Remove All Duplicates</button>
+                        <button id="keepFirstDuplicate" class="btn-purple w-full">Keep First, Remove Others</button>
+                        <button id="keepLastDuplicate" class="btn-purple w-full">Keep Last, Remove Others</button>
+                    </div>
+                </div>
+
+                <!-- Outlier Detection -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Outlier Detection & Treatment
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="detectOutliersIQR" class="btn-warning w-full">Detect Outliers (IQR Method)</button>
+                        <button id="detectOutliersZScore" class="btn-warning w-full">Detect Outliers (Z-Score)</button>
+                        <button id="removeOutliers" class="btn-danger w-full">Remove Detected Outliers</button>
+                        <button id="capOutliers" class="btn-info w-full">Cap Outliers (Winsorization)</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle Column - Data Transformation -->
+            <div class="space-y-6">
+                <!-- Text & String Cleaning -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a.997.997 0 01-1.414 0l-7-7A1.997 1.997 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        Text & String Cleaning
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="trimWhitespace" class="btn-primary w-full">Trim Leading/Trailing Spaces</button>
+                        <button id="removeExtraSpaces" class="btn-primary w-full">Remove Extra Spaces</button>
+                        <button id="standardizeCase" class="btn-primary w-full">Standardize to Lowercase</button>
+                        <button id="titleCase" class="btn-primary w-full">Convert to Title Case</button>
+                        <button id="removeSpecialChars" class="btn-primary w-full">Remove Special Characters</button>
+                        <button id="removeNumbers" class="btn-primary w-full">Remove Numbers from Text</button>
+                    </div>
+                </div>
+
+                <!-- Data Type Conversion -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                        </svg>
+                        Data Type Conversion
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="convertNumeric" class="btn-success w-full">Auto-Convert to Numeric</button>
+                        <button id="convertDates" class="btn-success w-full">Auto-Convert Dates</button>
+                        <button id="convertBoolean" class="btn-success w-full">Convert to Boolean</button>
+                        <button id="convertCategories" class="btn-success w-full">Convert to Categories</button>
+                    </div>
+                </div>
+
+                <!-- Data Validation -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Data Validation
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="validateEmails" class="btn-primary w-full">Validate Email Addresses</button>
+                        <button id="validatePhones" class="btn-primary w-full">Validate Phone Numbers</button>
+                        <button id="validateDates" class="btn-primary w-full">Validate Date Formats</button>
+                        <button id="flagInconsistencies" class="btn-warning w-full">Flag Data Inconsistencies</button>
+                    </div>
+                </div>
+
+                <!-- Column Operations -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h2a2 2 0 002-2z"></path>
+                        </svg>
+                        Column Operations
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="removeEmptyColumns" class="btn-danger w-full">Remove Empty Columns</button>
+                        <button id="removeConstantColumns" class="btn-danger w-full">Remove Constant Columns</button>
+                        <button id="renameColumns" class="btn-info w-full">Standardize Column Names</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Preview & Export -->
+            <div class="space-y-6">
+                <!-- Data Preview -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                        </svg>
+                        Live Data Preview
+                    </h3>
+                    <div id="dataPreview" class="data-preview border rounded-lg p-4 bg-gray-50 text-sm text-gray-500">
+                        Upload a CSV file or load sample data to see preview...
+                    </div>
+                </div>
+
+                <!-- Statistical Summary -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                        </svg>
+                        Statistical Summary
+                    </h3>
+                    <div id="statisticalSummary" class="text-sm text-gray-600">
+                        Load data to see statistical summary...
+                    </div>
+                </div>
+
+                <!-- Export & Save -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export Clean Data
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="exportCSV" class="btn-success w-full">Download Cleaned CSV</button>
+                        <button id="exportSummaryReport" class="btn-info w-full">Generate Cleaning Report</button>
+                        <button id="resetData" class="btn-danger w-full">Reset to Original</button>
+                    </div>
+                </div>
+
+                <!-- Undo/Redo Operations -->
+                <div class="bg-white rounded-xl shadow-lg p-6 cleaning-card">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path>
+                        </svg>
+                        History & Undo
+                    </h3>
+                    <div class="space-y-3">
+                        <button id="undoLastAction" class="btn-warning w-full">Undo Last Action</button>
+                        <button id="redoLastAction" class="btn-info w-full">Redo Action</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Log -->
+        <div class="bg-white rounded-xl shadow-lg p-6 mt-8 cleaning-card">
+            <h3 class="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                </svg>
+                Data Cleaning Action Log
+                <button id="clearLog" class="ml-auto text-xs bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded">Clear Log</button>
+            </h3>
+            <div id="actionLog" class="bg-gray-50 rounded-lg p-4 min-h-[120px] max-h-60 overflow-y-auto text-sm">
+                <div class="text-gray-600">🚀 DataClean Pro initialized. Ready to process your data...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let currentData = [];
+        let originalData = [];
+        let dataHistory = [];
+        let historyIndex = -1;
+        let actionCount = 0;
+        let outlierIndices = [];
+
+        // Enhanced sample datasets
+        const sampleData = [
+            { id: 1, name: 'John Doe', age: 25, email: 'john.doe@email.com', salary: 50000, department: 'Engineering', join_date: '2021-01-15', performance: 8.5 },
+            { id: 2, name: ' Jane Smith ', age: 32, email: 'jane.smith@email.com', salary: 65000, department: 'Marketing', join_date: '2020-03-22', performance: 9.2 },
+            { id: 3, name: 'Bob Johnson', age: 28, email: 'bob.johnson@email.com', salary: 55000, department: 'Engineering', join_date: '2021-07-10', performance: 7.8 },
+            { id: 4, name: 'Alice Brown', age: 35, email: 'alice.brown@email.com', salary: 70000, department: 'Sales', join_date: '2019-11-05', performance: 8.9 },
+            { id: 5, name: 'Charlie Wilson', age: 29, email: 'charlie.wilson@email.com', salary: 60000, department: 'Marketing', join_date: '2020-09-18', performance: 8.1 }
+        ];
+
+        const messyData = [
+            { id: '1', name: 'John Doe   ', age: '25', email: 'john@email', salary: '50000', department: 'engineering', join_date: '2021/01/15', performance: '8.5', phone: '123-456-7890' },
+            { id: '2', name: ' JANE SMITH ', age: '', email: 'jane.smith@email.com', salary: '65000', department: 'Marketing', join_date: '20-03-2020', performance: '9.2', phone: '(555) 123-4567' },
+            { id: '3', name: 'bob johnson', age: '28', email: '', salary: '', department: 'engineering', join_date: '2021-07-10', performance: '7.8', phone: '555.987.6543' },
+            { id: '4', name: 'Alice Brown', age: '35', email: 'alice.brown@email.com', salary: '70000', department: 'Sales', join_date: '2019-11-05', performance: '8.9', phone: 'invalid' },
+            { id: '5', name: ' JANE SMITH ', age: '32', email: 'jane.smith@email.com', salary: '65000', department: 'Marketing', join_date: '20-03-2020', performance: '9.2', phone: '(555) 123-4567' }, // duplicate
+            { id: '6', name: 'Charlie Wilson!!!', age: 'twenty-nine', email: 'charlie@email.com', salary: '1000000', department: 'Marketing', join_date: 'invalid-date', performance: 'excellent', phone: '9876543210' }, // outlier salary
+            { id: '7', name: 'Diana Prince', age: '30', email: 'diana.prince@email.com', salary: '58000', department: '', join_date: '2021-05-20', performance: '8.3', phone: '' },
+            { id: '8', name: '', age: '27', email: 'unknown@email.com', salary: '0', department: 'HR', join_date: '2022-01-01', performance: '', phone: '123-456-7890' }
+        ];
+
+        // Utility Functions
+        function saveToHistory() {
+            if (historyIndex < dataHistory.length - 1) {
+                dataHistory = dataHistory.slice(0, historyIndex + 1);
+            }
+            dataHistory.push(JSON.parse(JSON.stringify(currentData)));
+            historyIndex = dataHistory.length - 1;
+            
+            // Limit history to 50 operations
+            if (dataHistory.length > 50) {
+                dataHistory.shift();
+                historyIndex--;
+            }
+        }
+
+        function logAction(message, type = 'info') {
+            actionCount++;
+            const log = document.getElementById('actionLog');
+            const timestamp = new Date().toLocaleTimeString();
+            const icons = {
+                info: '📊',
+                success: '✅', 
+                warning: '⚠️',
+                error: '❌',
+                action: '🔧'
+            };
+            
+            const newEntry = document.createElement('div');
+            newEntry.className = 'mb-2 p-2 rounded border-l-4 ' + 
+                (type === 'success' ? 'border-green-500 bg-green-50' :
+                 type === 'warning' ? 'border-yellow-500 bg-yellow-50' :
+                 type === 'error' ? 'border-red-500 bg-red-50' : 
+                 'border-blue-500 bg-blue-50');
+            
+            newEntry.innerHTML = `
+                <span class="font-medium text-gray-800">[${actionCount}] ${icons[type]}</span> 
+                <span class="text-gray-500 text-xs">${timestamp}</span> 
+                <span class="text-gray-700">- ${message}</span>
+            `;
+            
+            log.appendChild(newEntry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function calculateStatistics() {
+            if (currentData.length === 0) return {};
+            
+            const headers = Object.keys(currentData[0]);
+            const stats = {};
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const numericValues = values.map(v => parseFloat(v)).filter(v => !isNaN(v));
+                
+                stats[header] = {
+                    count: values.length,
+                    missing: currentData.length - values.length,
+                    unique: new Set(values).size,
+                    type: numericValues.length > values.length * 0.7 ? 'numeric' : 'categorical'
+                };
+                
+                if (stats[header].type === 'numeric' && numericValues.length > 0) {
+                    numericValues.sort((a, b) => a - b);
+                    stats[header].mean = numericValues.reduce((a, b) => a + b, 0) / numericValues.length;
+                    stats[header].median = numericValues.length % 2 === 0 
+                        ? (numericValues[numericValues.length / 2 - 1] + numericValues[numericValues.length / 2]) / 2
+                        : numericValues[Math.floor(numericValues.length / 2)];
+                    stats[header].min = numericValues[0];
+                    stats[header].max = numericValues[numericValues.length - 1];
+                    stats[header].std = Math.sqrt(numericValues.reduce((sum, val) => sum + Math.pow(val - stats[header].mean, 2), 0) / numericValues.length);
+                } else if (values.length > 0) {
+                    const frequency = {};
+                    values.forEach(val => frequency[val] = (frequency[val] || 0) + 1);
+                    stats[header].mode = Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
+                }
+            });
+            
+            return stats;
+        }
+
+        function updateOverview() {
+            if (currentData.length === 0) return;
+
+            const totalRows = currentData.length;
+            const totalCols = Object.keys(currentData[0]).length;
+            
+            let missingCount = 0;
+            let totalCells = 0;
+            currentData.forEach(row => {
+                Object.values(row).forEach(value => {
+                    totalCells++;
+                    if (value === '' || value === null || value === undefined) {
+                        missingCount++;
+                    }
+                });
+            });
+
+            // Find duplicates
+            const duplicates = [];
+            for (let i = 0; i < currentData.length; i++) {
+                for (let j = i + 1; j < currentData.length; j++) {
+                    if (JSON.stringify(currentData[i]) === JSON.stringify(currentData[j])) {
+                        duplicates.push(j);
+                    }
+                }
+            }
+
+            const stats = calculateStatistics();
+            const numericCols = Object.values(stats).filter(stat => stat.type === 'numeric').length;
+            const completeness = Math.round(((totalCells - missingCount) / totalCells) * 100);
+
+            document.getElementById('totalRows').textContent = totalRows;
+            document.getElementById('totalCols').textContent = totalCols;
+            document.getElementById('missingValues').textContent = missingCount;
+            document.getElementById('duplicateRows').textContent = new Set(duplicates).size;
+            document.getElementById('numericCols').textContent = numericCols;
+            document.getElementById('completeness').textContent = completeness + '%';
+
+            updateColumnAnalysis(stats);
+            updateStatisticalSummary(stats);
+        }
+
+        function updateColumnAnalysis(stats) {
+            const container = document.getElementById('columnAnalysis');
+            container.innerHTML = '';
+            
+            Object.entries(stats).forEach(([column, stat]) => {
+                const card = document.createElement('div');
+                card.className = 'bg-gray-50 p-3 rounded-lg border';
+                
+                const missingPercent = Math.round((stat.missing / currentData.length) * 100);
+                const statusColor = missingPercent > 30 ? 'text-red-600' : missingPercent > 10 ? 'text-yellow-600' : 'text-green-600';
+                
+                card.innerHTML = `
+                    <div class="font-medium text-sm text-gray-800 truncate" title="${column}">${column}</div>
+                    <div class="text-xs text-gray-600 mt-1">
+                        <div>Type: <span class="font-medium">${stat.type}</span></div>
+                        <div>Missing: <span class="${statusColor}">${stat.missing} (${missingPercent}%)</span></div>
+                        <div>Unique: <span class="font-medium">${stat.unique}</span></div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function updateStatisticalSummary(stats) {
+            const container = document.getElementById('statisticalSummary');
+            let html = '<div class="space-y-2">';
+            
+            Object.entries(stats).forEach(([column, stat]) => {
+                if (stat.type === 'numeric' && stat.mean !== undefined) {
+                    html += `
+                        <div class="bg-gray-50 p-2 rounded">
+                            <div class="font-medium text-xs text-gray-800">${column}</div>
+                            <div class="text-xs text-gray-600 mt-1">
+                                Mean: ${stat.mean.toFixed(2)} | Median: ${stat.median.toFixed(2)} | Std: ${stat.std.toFixed(2)}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function updatePreview() {
+            const preview = document.getElementById('dataPreview');
+            if (currentData.length === 0) {
+                preview.innerHTML = '<p class="text-gray-500">No data to display</p>';
+                return;
+            }
+
+            const headers = Object.keys(currentData[0]);
+            let html = '<div class="overflow-x-auto"><table class="w-full table-fixed text-xs border-collapse">';
+            
+            // Header
+            html += '<thead><tr class="bg-gray-100">';
+            headers.forEach(header => {
+                html += `<th class="px-3 py-2 text-left font-medium text-gray-700 border border-gray-300 min-w-[120px] truncate" title="${header}">${header}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            const displayRows = currentData.slice(0, 15);
+            displayRows.forEach((row, index) => {
+                const isOutlier = outlierIndices.includes(index);
+                html += `<tr class="${index % 2 === 0 ? 'bg-white' : 'bg-gray-50'} ${isOutlier ? 'bg-yellow-100' : ''}">`;
+                headers.forEach(header => {
+                    const value = row[header];
+                    const isEmpty = value === '' || value === null || value === undefined;
+                    const displayValue = isEmpty ? '(missing)' : (value.toString().length > 15 ? value.toString().substring(0, 15) + '...' : value);
+                    html += `<td class="px-3 py-2 border border-gray-300 truncate ${isEmpty ? 'bg-red-50 text-red-600' : ''}" title="${isEmpty ? 'Missing value' : value}">${displayValue}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table></div>';
+            if (currentData.length > 15) {
+                html += `<p class="mt-3 text-gray-500 text-center text-sm">Showing first 15 of ${currentData.length} rows</p>`;
+            }
+            preview.innerHTML = html;
+        }
+
+        function loadData(data) {
+            currentData = JSON.parse(JSON.stringify(data));
+            originalData = JSON.parse(JSON.stringify(data));
+            dataHistory = [JSON.parse(JSON.stringify(data))];
+            historyIndex = 0;
+            outlierIndices = [];
+            
+            document.getElementById('dataOverview').classList.remove('hidden');
+            updateOverview();
+            updatePreview();
+            logAction(`Loaded ${data.length} rows and ${Object.keys(data[0]).length} columns`, 'success');
+        }
+
+        // Statistical Functions
+        function getMean(values) {
+            const nums = values.filter(v => !isNaN(parseFloat(v))).map(v => parseFloat(v));
+            return nums.length > 0 ? nums.reduce((a, b) => a + b, 0) / nums.length : null;
+        }
+
+        function getMedian(values) {
+            const nums = values.filter(v => !isNaN(parseFloat(v))).map(v => parseFloat(v)).sort((a, b) => a - b);
+            if (nums.length === 0) return null;
+            return nums.length % 2 === 0 
+                ? (nums[nums.length / 2 - 1] + nums[nums.length / 2]) / 2 
+                : nums[Math.floor(nums.length / 2)];
+        }
+
+        function getMode(values) {
+            const filtered = values.filter(v => v !== '' && v !== null && v !== undefined);
+            if (filtered.length === 0) return null;
+            
+            const frequency = {};
+            filtered.forEach(val => frequency[val] = (frequency[val] || 0) + 1);
+            return Object.keys(frequency).reduce((a, b) => frequency[a] > frequency[b] ? a : b);
+        }
+
+        function detectOutliersIQR(values) {
+            const nums = values.filter(v => !isNaN(parseFloat(v))).map(v => parseFloat(v)).sort((a, b) => a - b);
+            if (nums.length < 4) return [];
+            
+            const q1Index = Math.floor(nums.length * 0.25);
+            const q3Index = Math.floor(nums.length * 0.75);
+            const q1 = nums[q1Index];
+            const q3 = nums[q3Index];
+            const iqr = q3 - q1;
+            const lowerBound = q1 - 1.5 * iqr;
+            const upperBound = q3 + 1.5 * iqr;
+            
+            return nums.filter(v => v < lowerBound || v > upperBound);
+        }
+
+        function detectOutliersZScore(values, threshold = 2) {
+            const nums = values.filter(v => !isNaN(parseFloat(v))).map(v => parseFloat(v));
+            if (nums.length < 2) return [];
+            
+            const mean = nums.reduce((a, b) => a + b, 0) / nums.length;
+            const std = Math.sqrt(nums.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / nums.length);
+            
+            if (std === 0) return [];
+            return nums.filter(v => Math.abs((v - mean) / std) > threshold);
+        }
+
+        // Event Listeners
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            Papa.parse(file, {
+                header: true,
+                skipEmptyLines: true,
+                dynamicTyping: false,
+                complete: function(results) {
+                    if (results.data && results.data.length > 0) {
+                        loadData(results.data);
+                    } else {
+                        logAction('Failed to load file: No valid data found', 'error');
+                    }
+                },
+                error: function(error) {
+                    logAction(`Error loading file: ${error.message}`, 'error');
+                }
+            });
+        });
+
+        document.getElementById('loadSampleData').addEventListener('click', function() {
+            loadData(sampleData);
+        });
+
+        document.getElementById('loadMessyData').addEventListener('click', function() {
+            loadData(messyData);
+        });
+
+        // Missing Value Treatments
+        document.getElementById('removeMissingRows').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const originalLength = currentData.length;
+            currentData = currentData.filter(row => {
+                return Object.values(row).every(value => value !== '' && value !== null && value !== undefined);
+            });
+            const removedCount = originalLength - currentData.length;
+            updateOverview();
+            updatePreview();
+            logAction(`Removed ${removedCount} rows with missing values`, 'action');
+        });
+
+        document.getElementById('fillMissingMean').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let fillCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const mean = getMean(values);
+                
+                if (mean !== null) {
+                    currentData.forEach(row => {
+                        if (row[header] === '' || row[header] === null || row[header] === undefined) {
+                            row[header] = mean.toFixed(2);
+                            fillCount++;
+                        }
+                    });
+                }
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Filled ${fillCount} missing numeric values with mean`, 'action');
+        });
+
+        document.getElementById('fillMissingMedian').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let fillCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const median = getMedian(values);
+                
+                if (median !== null) {
+                    currentData.forEach(row => {
+                        if (row[header] === '' || row[header] === null || row[header] === undefined) {
+                            row[header] = median.toString();
+                            fillCount++;
+                        }
+                    });
+                }
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Filled ${fillCount} missing numeric values with median`, 'action');
+        });
+
+        document.getElementById('fillMissingMode').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let fillCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const mode = getMode(values);
+                
+                if (mode !== null) {
+                    currentData.forEach(row => {
+                        if (row[header] === '' || row[header] === null || row[header] === undefined) {
+                            row[header] = mode;
+                            fillCount++;
+                        }
+                    });
+                }
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Filled ${fillCount} missing values with mode`, 'action');
+        });
+
+        document.getElementById('fillMissingZero').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let fillCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (row[key] === '' || row[key] === null || row[key] === undefined) {
+                        row[key] = '0';
+                        fillCount++;
+                    }
+                });
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Filled ${fillCount} missing values with zero`, 'action');
+        });
+
+        document.getElementById('fillMissingForward').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let fillCount = 0;
+            
+            headers.forEach(header => {
+                let lastValue = null;
+                currentData.forEach(row => {
+                    if (row[header] === '' || row[header] === null || row[header] === undefined) {
+                        if (lastValue !== null) {
+                            row[header] = lastValue;
+                            fillCount++;
+                        }
+                    } else {
+                        lastValue = row[header];
+                    }
+                });
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Forward filled ${fillCount} missing values`, 'action');
+        });
+
+        document.getElementById('fillMissingBackward').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let fillCount = 0;
+            
+            headers.forEach(header => {
+                let nextValue = null;
+                for (let i = currentData.length - 1; i >= 0; i--) {
+                    if (currentData[i][header] === '' || currentData[i][header] === null || currentData[i][header] === undefined) {
+                        if (nextValue !== null) {
+                            currentData[i][header] = nextValue;
+                            fillCount++;
+                        }
+                    } else {
+                        nextValue = currentData[i][header];
+                    }
+                }
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Backward filled ${fillCount} missing values`, 'action');
+        });
+
+        // Duplicate Management
+        document.getElementById('removeDuplicates').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const originalLength = currentData.length;
+            const seen = new Set();
+            currentData = currentData.filter(row => {
+                const key = JSON.stringify(row);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            const removedCount = originalLength - currentData.length;
+            updateOverview();
+            updatePreview();
+            logAction(`Removed ${removedCount} duplicate rows`, 'action');
+        });
+
+        document.getElementById('keepFirstDuplicate').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const originalLength = currentData.length;
+            const seen = new Set();
+            currentData = currentData.filter(row => {
+                const key = JSON.stringify(row);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            const removedCount = originalLength - currentData.length;
+            updateOverview();
+            updatePreview();
+            logAction(`Kept first occurrence, removed ${removedCount} duplicate rows`, 'action');
+        });
+
+        document.getElementById('keepLastDuplicate').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const originalLength = currentData.length;
+            const seen = new Set();
+            const reversed = [...currentData].reverse();
+            const filtered = reversed.filter(row => {
+                const key = JSON.stringify(row);
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            currentData = filtered.reverse();
+            const removedCount = originalLength - currentData.length;
+            updateOverview();
+            updatePreview();
+            logAction(`Kept last occurrence, removed ${removedCount} duplicate rows`, 'action');
+        });
+
+        // Outlier Detection
+        document.getElementById('detectOutliersIQR').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            const headers = Object.keys(currentData[0]);
+            outlierIndices = [];
+            let outlierCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]);
+                const outliers = detectOutliersIQR(values);
+                
+                currentData.forEach((row, index) => {
+                    if (outliers.includes(parseFloat(row[header]))) {
+                        outlierIndices.push(index);
+                        outlierCount++;
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Detected ${new Set(outlierIndices).size} rows with outliers using IQR method`, 'info');
+        });
+
+        document.getElementById('detectOutliersZScore').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            const headers = Object.keys(currentData[0]);
+            outlierIndices = [];
+            let outlierCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]);
+                const outliers = detectOutliersZScore(values);
+                
+                currentData.forEach((row, index) => {
+                    if (outliers.includes(parseFloat(row[header]))) {
+                        outlierIndices.push(index);
+                        outlierCount++;
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Detected ${new Set(outlierIndices).size} rows with outliers using Z-Score method`, 'info');
+        });
+
+        document.getElementById('removeOutliers').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            if (outlierIndices.length === 0) { logAction('No outliers detected. Please run outlier detection first.', 'warning'); return; }
+            
+            saveToHistory();
+            const originalLength = currentData.length;
+            const uniqueIndices = [...new Set(outlierIndices)].sort((a, b) => b - a);
+            
+            uniqueIndices.forEach(index => {
+                if (index < currentData.length) {
+                    currentData.splice(index, 1);
+                }
+            });
+            
+            outlierIndices = [];
+            const removedCount = originalLength - currentData.length;
+            updateOverview();
+            updatePreview();
+            logAction(`Removed ${removedCount} outlier rows`, 'action');
+        });
+
+        document.getElementById('capOutliers').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let cappedCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => !isNaN(parseFloat(v))).map(v => parseFloat(v));
+                if (values.length < 4) return;
+                
+                values.sort((a, b) => a - b);
+                const q1Index = Math.floor(values.length * 0.25);
+                const q3Index = Math.floor(values.length * 0.75);
+                const q1 = values[q1Index];
+                const q3 = values[q3Index];
+                const iqr = q3 - q1;
+                const lowerBound = q1 - 1.5 * iqr;
+                const upperBound = q3 + 1.5 * iqr;
+                
+                currentData.forEach(row => {
+                    const value = parseFloat(row[header]);
+                    if (!isNaN(value)) {
+                        if (value < lowerBound) {
+                            row[header] = lowerBound.toFixed(2);
+                            cappedCount++;
+                        } else if (value > upperBound) {
+                            row[header] = upperBound.toFixed(2);
+                            cappedCount++;
+                        }
+                    }
+                });
+            });
+            
+            outlierIndices = [];
+            updateOverview();
+            updatePreview();
+            logAction(`Capped ${cappedCount} outlier values using Winsorization`, 'action');
+        });
+
+        // Text Cleaning Functions
+        document.getElementById('trimWhitespace').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let trimCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (typeof row[key] === 'string') {
+                        const trimmed = row[key].trim();
+                        if (row[key] !== trimmed) {
+                            row[key] = trimmed;
+                            trimCount++;
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Trimmed whitespace from ${trimCount} values`, 'action');
+        });
+
+        document.getElementById('removeExtraSpaces').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let cleanCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (typeof row[key] === 'string') {
+                        const cleaned = row[key].replace(/\s+/g, ' ').trim();
+                        if (row[key] !== cleaned) {
+                            row[key] = cleaned;
+                            cleanCount++;
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Cleaned extra spaces from ${cleanCount} values`, 'action');
+        });
+
+        document.getElementById('standardizeCase').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let changeCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (typeof row[key] === 'string' && isNaN(parseFloat(row[key]))) {
+                        const lowercased = row[key].toLowerCase();
+                        if (row[key] !== lowercased) {
+                            row[key] = lowercased;
+                            changeCount++;
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Standardized ${changeCount} text values to lowercase`, 'action');
+        });
+
+        document.getElementById('titleCase').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let changeCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (typeof row[key] === 'string' && isNaN(parseFloat(row[key]))) {
+                        const titleCased = row[key].replace(/\w\S*/g, (txt) => 
+                            txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase()
+                        );
+                        if (row[key] !== titleCased) {
+                            row[key] = titleCased;
+                            changeCount++;
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Converted ${changeCount} text values to title case`, 'action');
+        });
+
+        document.getElementById('removeSpecialChars').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let cleanCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (typeof row[key] === 'string' && isNaN(parseFloat(row[key]))) {
+                        const cleaned = row[key].replace(/[^a-zA-Z0-9\s]/g, '');
+                        if (row[key] !== cleaned) {
+                            row[key] = cleaned;
+                            cleanCount++;
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Removed special characters from ${cleanCount} text values`, 'action');
+        });
+
+        document.getElementById('removeNumbers').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let cleanCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    if (typeof row[key] === 'string' && isNaN(parseFloat(row[key]))) {
+                        const cleaned = row[key].replace(/\d/g, '').trim();
+                        if (row[key] !== cleaned) {
+                            row[key] = cleaned;
+                            cleanCount++;
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Removed numbers from ${cleanCount} text values`, 'action');
+        });
+
+        // Data Type Conversion
+        document.getElementById('convertNumeric').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let convertCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const numericValues = values.filter(v => !isNaN(parseFloat(v)));
+                const isNumericColumn = numericValues.length > values.length * 0.7;
+                
+                if (isNumericColumn) {
+                    currentData.forEach(row => {
+                        if (row[header] !== '' && row[header] !== null && row[header] !== undefined) {
+                            const num = parseFloat(row[header]);
+                            if (!isNaN(num)) {
+                                const formatted = num % 1 === 0 ? num.toString() : num.toFixed(2);
+                                if (row[header] !== formatted) {
+                                    row[header] = formatted;
+                                    convertCount++;
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Auto-converted ${convertCount} values to proper numeric format`, 'action');
+        });
+
+        document.getElementById('convertDates').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let convertCount = 0;
+            
+            headers.forEach(header => {
+                currentData.forEach(row => {
+                    if (row[header] && typeof row[header] === 'string') {
+                        const dateValue = row[header];
+                        
+                        // Try various date formats
+                        const formats = [
+                            /^\d{4}[/-]\d{1,2}[/-]\d{1,2}$/,  // YYYY-MM-DD or YYYY/MM/DD
+                            /^\d{1,2}[/-]\d{1,2}[/-]\d{4}$/,  // MM-DD-YYYY or MM/DD/YYYY
+                            /^\d{2}[/-]\d{2}[/-]\d{4}$/       // DD-MM-YYYY or DD/MM/YYYY
+                        ];
+                        
+                        if (formats.some(format => format.test(dateValue))) {
+                            const date = new Date(dateValue);
+                            if (!isNaN(date.getTime())) {
+                                const formatted = date.toISOString().split('T')[0];
+                                if (row[header] !== formatted) {
+                                    row[header] = formatted;
+                                    convertCount++;
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Standardized ${convertCount} date values to YYYY-MM-DD format`, 'action');
+        });
+
+        document.getElementById('convertBoolean').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            let convertCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    const value = row[key];
+                    if (typeof value === 'string') {
+                        const lower = value.toLowerCase().trim();
+                        if (['true', 'false', 'yes', 'no', '1', '0', 'y', 'n'].includes(lower)) {
+                            const boolValue = ['true', 'yes', '1', 'y'].includes(lower) ? 'true' : 'false';
+                            if (row[key] !== boolValue) {
+                                row[key] = boolValue;
+                                convertCount++;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            updatePreview();
+            logAction(`Converted ${convertCount} values to boolean format`, 'action');
+        });
+
+        document.getElementById('convertCategories').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let standardizeCount = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const uniqueValues = new Set(values);
+                
+                if (uniqueValues.size < values.length * 0.5 && uniqueValues.size < 20) {
+                    currentData.forEach(row => {
+                        if (row[header] && typeof row[header] === 'string') {
+                            const standardized = row[header].trim().toLowerCase();
+                            if (row[header] !== standardized) {
+                                row[header] = standardized;
+                                standardizeCount++;
+                            }
+                        }
+                    });
+                }
+            });
+            
+            updatePreview();
+            logAction(`Standardized ${standardizeCount} categorical values`, 'action');
+        });
+
+        // Data Validation
+        document.getElementById('validateEmails').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            let invalidCount = 0;
+            let validCount = 0;
+            
+            currentData.forEach((row, index) => {
+                Object.keys(row).forEach(key => {
+                    const value = row[key];
+                    if (typeof value === 'string' && value.includes('@')) {
+                        if (emailRegex.test(value)) {
+                            validCount++;
+                        } else {
+                            invalidCount++;
+                        }
+                    }
+                });
+            });
+            
+            logAction(`Email validation: ${validCount} valid, ${invalidCount} invalid email addresses found`, 'info');
+        });
+
+        document.getElementById('validatePhones').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            const phoneRegex = /^[\+]?[1-9][\d]{0,15}$/;
+            let invalidCount = 0;
+            let validCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    const value = row[key];
+                    if (typeof value === 'string') {
+                        const cleaned = value.replace(/[\s\-\(\)\.]/g, '');
+                        if (cleaned.length >= 7 && cleaned.length <= 15 && /^\d+$/.test(cleaned)) {
+                            if (phoneRegex.test(cleaned)) {
+                                validCount++;
+                            } else {
+                                invalidCount++;
+                            }
+                        }
+                    }
+                });
+            });
+            
+            logAction(`Phone validation: ${validCount} valid, ${invalidCount} invalid phone numbers found`, 'info');
+        });
+
+        document.getElementById('validateDates').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            let invalidCount = 0;
+            let validCount = 0;
+            
+            currentData.forEach(row => {
+                Object.keys(row).forEach(key => {
+                    const value = row[key];
+                    if (typeof value === 'string' && (value.includes('/') || value.includes('-'))) {
+                        const date = new Date(value);
+                        if (!isNaN(date.getTime()) && date.getFullYear() > 1900 && date.getFullYear() < 2100) {
+                            validCount++;
+                        } else {
+                            invalidCount++;
+                        }
+                    }
+                });
+            });
+            
+            logAction(`Date validation: ${validCount} valid, ${invalidCount} invalid dates found`, 'info');
+        });
+
+        document.getElementById('flagInconsistencies').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            const headers = Object.keys(currentData[0]);
+            let inconsistencies = 0;
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const uniqueValues = new Set(values.map(v => v.toString().toLowerCase().trim()));
+                const actualValues = new Set(values);
+                
+                if (uniqueValues.size !== actualValues.size) {
+                    inconsistencies += actualValues.size - uniqueValues.size;
+                }
+            });
+            
+            logAction(`Found ${inconsistencies} potential data inconsistencies (case/whitespace variations)`, 'warning');
+        });
+
+        // Column Operations
+        document.getElementById('removeEmptyColumns').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            const emptyColumns = [];
+            
+            headers.forEach(header => {
+                const hasData = currentData.some(row => row[header] !== '' && row[header] !== null && row[header] !== undefined);
+                if (!hasData) {
+                    emptyColumns.push(header);
+                }
+            });
+            
+            if (emptyColumns.length > 0) {
+                currentData.forEach(row => {
+                    emptyColumns.forEach(col => delete row[col]);
+                });
+            }
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Removed ${emptyColumns.length} empty columns`, 'action');
+        });
+
+        document.getElementById('removeConstantColumns').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            const constantColumns = [];
+            
+            headers.forEach(header => {
+                const values = currentData.map(row => row[header]).filter(v => v !== '' && v !== null && v !== undefined);
+                const uniqueValues = new Set(values);
+                if (uniqueValues.size <= 1) {
+                    constantColumns.push(header);
+                }
+            });
+            
+            if (constantColumns.length > 0) {
+                currentData.forEach(row => {
+                    constantColumns.forEach(col => delete row[col]);
+                });
+            }
+            
+            updateOverview();
+            updatePreview();
+            logAction(`Removed ${constantColumns.length} constant columns`, 'action');
+        });
+
+        document.getElementById('renameColumns').addEventListener('click', function() {
+            if (currentData.length === 0) { logAction('No data loaded', 'warning'); return; }
+            
+            saveToHistory();
+            const headers = Object.keys(currentData[0]);
+            let renameCount = 0;
+            
+            const renamedData = currentData.map(row => {
+                const newRow = {};
+                Object.keys(row).forEach(key => {
+                    const standardizedKey = key.toLowerCase()
+                        .replace(/\s+/g, '_')
+                        .replace(/[^a-z0-9_]/g, '')
+                        .replace(/_{2,}/g, '_')
+                        .replace(/^_|_$/g, '');
+                    
+                    if (key !== standardizedKey) {
+                        renameCount++;
+                    }
+                    newRow[standardizedKey] = row[key];
+                });
+                return newRow;
+            });
+            
+            currentData = renamedData;
+            updateOverview();
+            updatePreview();
+            logAction(`Standardized ${renameCount} column names to snake_case format`, 'action');
+        });
+
+        // History Operations
+        document.getElementById('undoLastAction').addEventListener('click', function() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                currentData = JSON.parse(JSON.stringify(dataHistory[historyIndex]));
+                updateOverview();
+                updatePreview();
+                logAction('Undid last action', 'info');
+            } else {
+                logAction('No actions to undo', 'warning');
+            }
+        });
+
+        document.getElementById('redoLastAction').addEventListener('click', function() {
+            if (historyIndex < dataHistory.length - 1) {
+                historyIndex++;
+                currentData = JSON.parse(JSON.stringify(dataHistory[historyIndex]));
+                updateOverview();
+                updatePreview();
+                logAction('Redid action', 'info');
+            } else {
+                logAction('No actions to redo', 'warning');
+            }
+        });
+
+        document.getElementById('resetData').addEventListener('click', function() {
+            if (originalData.length === 0) { logAction('No original data to reset to', 'warning'); return; }
+            
+            currentData = JSON.parse(JSON.stringify(originalData));
+            dataHistory = [JSON.parse(JSON.stringify(originalData))];
+            historyIndex = 0;
+            outlierIndices = [];
+            
+            updateOverview();
+            updatePreview();
+            logAction('Reset data to original state', 'info');
+        });
+
+        // Export Functions
+        document.getElementById('exportCSV').addEventListener('click', function() {
+            if (currentData.length === 0) {
+                logAction('No data to export', 'warning');
+                return;
+            }
+
+            const csv = Papa.unparse(currentData);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            
+            if (link.download !== undefined) {
+                const url = URL.createObjectURL(blob);
+                link.setAttribute('href', url);
+                link.setAttribute('download', `cleaned_data_${new Date().toISOString().slice(0, 10)}.csv`);
+                link.style.visibility = 'hidden';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                logAction('Clean data exported successfully', 'success');
+            }
+        });
+
+        document.getElementById('exportSummaryReport').addEventListener('click', function() {
+            if (currentData.length === 0) {
+                logAction('No data to generate report for', 'warning');
+                return;
+            }
+
+            const stats = calculateStatistics();
+            let report = `DATA CLEANING SUMMARY REPORT\n`;
+            report += `Generated: ${new Date().toLocaleString()}\n\n`;
+            report += `DATASET OVERVIEW:\n`;
+            report += `- Total Rows: ${currentData.length}\n`;
+            report += `- Total Columns: ${Object.keys(currentData[0]).length}\n`;
+            report += `- Original Rows: ${originalData.length}\n\n`;
+            
+            report += `COLUMN ANALYSIS:\n`;
+            Object.entries(stats).forEach(([col, stat]) => {
+                report += `\n${col.toUpperCase()}:\n`;
+                report += `  - Type: ${stat.type}\n`;
+                report += `  - Missing Values: ${stat.missing}\n`;
+                report += `  - Unique Values: ${stat.unique}\n`;
+                if (stat.type === 'numeric' && stat.mean !== undefined) {
+                    report += `  - Mean: ${stat.mean.toFixed(2)}\n`;
+                    report += `  - Median: ${stat.median.toFixed(2)}\n`;
+                    report += `  - Min: ${stat.min}\n`;
+                    report += `  - Max: ${stat.max}\n`;
+                }
+            });
+
+            const blob = new Blob([report], { type: 'text/plain;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `data_cleaning_report_${new Date().toISOString().slice(0, 10)}.txt`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            logAction('Data cleaning report generated and downloaded', 'success');
+        });
+
+        document.getElementById('clearLog').addEventListener('click', function() {
+            const log = document.getElementById('actionLog');
+            log.innerHTML = '<div class="text-gray-600">🚀 DataClean Pro initialized. Ready to process your data...</div>';
+            actionCount = 0;
+        });
+
+        // Initialize
+        logAction('DataClean Pro ready! Upload data or load samples to begin cleaning.', 'info');
+    </script>
+</body>
+</html>
